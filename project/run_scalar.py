@@ -107,10 +107,20 @@ class ScalarTrain:
             if epoch % 10 == 0 or epoch == max_epochs:
                 log_fn(epoch, total_loss, correct, losses)
 
-
 if __name__ == "__main__":
     PTS = 50
-    HIDDEN = 2
+    HIDDEN = 10
     RATE = 0.5
-    data = minitorch.datasets["Simple"](PTS)
-    ScalarTrain(HIDDEN).train(data, RATE)
+    EPOCHS = 500
+    SEED = 67
+
+    for dataset_name in ("Simple", "Split", "Xor", "Diag"):
+        random.seed(SEED)
+        print(f"\nDataset: {dataset_name}")
+        print(
+            f"PTS={PTS}, HIDDEN={HIDDEN}, RATE={RATE}, "
+            f"EPOCHS={EPOCHS}, SEED={SEED}"
+        )
+        data = minitorch.datasets[dataset_name](PTS)
+        trainer = ScalarTrain(HIDDEN)
+        trainer.train(data, RATE, max_epochs=EPOCHS)

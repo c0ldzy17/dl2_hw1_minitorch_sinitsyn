@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Set, Tuple
 
 from typing_extensions import Protocol
 
@@ -22,8 +22,11 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
     Returns:
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
-    # TODO: Implement for Task 1.1.
-    raise NotImplementedError('Need to implement for Task 1.1')
+    vals_p = list(vals)
+    vals_m = list(vals)
+    vals_p[arg] = vals_p[arg] + epsilon
+    vals_m[arg] = vals_m[arg] - epsilon
+    return (f(*vals_p) - f(*vals_m)) / (2.0 * epsilon)
 
 
 variable_count = 1
@@ -61,8 +64,18 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    # TODO: Implement for Task 1.4.
-    raise NotImplementedError('Need to implement for Task 1.4')
+    vis: Set[int] = set()
+    order: List[Variable] = []
+    def visit(v: Variable) -> None:
+        if v.is_constant() or v.unique_id in vis:
+            return
+        vis.add(v.unique_id)
+        if not v.is_leaf():
+            for p in v.parents:
+                visit(p)
+        order.append(v)
+    visit(variable)
+    return list(reversed(order))
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -76,8 +89,19 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
 
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
-    # TODO: Implement for Task 1.4.
-    raise NotImplementedError('Need to implement for Task 1.4')
+    derivs: Dict[int, Any] = {
+        variable.unique_id: deriv
+    }
+    for v in topological_sort(variable):
+        d_v = derivs[v.unique_id]
+        if v.is_leaf():
+            v.accumulate_derivative(d_v)
+        else:
+            for p, d_p in v.chain_rule(d_v):
+                if p.is_constant():
+                    continue
+                uid = p.unique_id
+                derivs[uid] = derivs.get(uid, 0.0) + d_p
 
 
 @dataclass

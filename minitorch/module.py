@@ -37,7 +37,7 @@ class Module:
             module.train()
 
     def eval(self) -> None:
-        "Set the mode of this module and all descendent modules toесто: фу"
+        "Set the mode of this module and all descendent modules to `eval`."
         self.training = False
 
         for module in self.modules():
